@@ -1,174 +1,196 @@
 ---
 layout: post
-title:  "ESLint Integration"
-date:   2015-09-04
+title:  "Github Markdown Cheatsheet"
+date:   2015-12-03
 ---
 
-[ESLint](http://eslint.org/) is a JavaScript linter much more capable than JSHint in terms of customizability and therefore always to be preferred if programmatic enforcement with [JSCS](http://jscs.info/) is out of the question. It strength stems from the usage of Espree an JavaScript parser that produces an [Abstract Syntax Tree](http://felix-kling.de/esprima_ast_explorer/). The exposition of the AST allows for creating own rules. Furthermore it provides a great documentation, built-in features and testing framework.
+>	Github Flavored Markdown Cheatsheet.
+>		GFM is a variant of markdown developed by Github.
+https://help.github.com/articles/github-flavored-markdown
+https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet
 
-This post will give you detailed instructions on how to integrate `>=1.0.0 ESLint <2.0.0`  in a multi-module project environment independent of it's size. The approach presented is itself modular and creates a ESLint environment which is adaptable.
+>	Plain Text
 
-# Setup
+>	Headings
+	Header 1
+	========
 
-You want to create a plugin which governs your rules, therefore you will need to create a node module that will be added in each dependent's `package.json`. Please find a ready-to-use skeleton implementation [here](https://github.com/akullpp/eslint-plugin-skeleton).
+	Header 2
+	--------
 
-> Note that the name of the folder and plugin itself must start with `eslint-plugin-`
+	# H1
+	## H2
+	### H3
+	#### H4
+	##### H5
+	###### H6
 
-# Structure
+>	Emphasis
+	Emphasis (aka italics):		*asterisks* or _underscores_
+	Strong emphasis (aka bold):	**asterisks** or __underscores__
+	Combined emphasis:			**asterisks and _underscores_**
+	Strikethrough:				~~Scratch this.~~
 
-Let us analyze the minimal structure of the plugin module:
+>	Lists
+	In this example, leading and trailing spaces are shown with with dots: .
 
-```
-config/
-    mixins/
-    eslintrc.base
-rules/
-test/
-index.js
-package.json
-```
+	1. First ordered list item
+	2. Another item
+	..* Unordered sub-list.
+	1. Actual numbers don't matter, just that it's a number
+	..1. Ordered sub-list
+	4. And another item.
 
-The main configuration - with your rules initialized to a sensible default - is located in `config/eslintrc.base`. This file is also the `"root": true` of our environment. The most important adaption is:
+	...You can have properly indented paragraphs within list items. Notice the blank line above, and the leading spaces (at least one, but we'll use three here to also align the raw Markdown).
 
-```js
-"plugins": {
-    "skeleton"
-}
-```
+	...To have a line break without a paragraph, you will need to use two trailing spaces...
+	...Note that this line is separate, but within the same paragraph...
+	...(This is contrary to the typical GFM line break behaviour, where trailing spaces are not required.)
 
-which allows ESlint to recognize the folder `node_modules/eslint-plugin-skeleton/` as plugin once installed with npm.
+	* Unordered list can use asterisks
+	- Or minuses
+	+ Or pluses
 
-> ESLint configuration files are YAML, a superset of JSON, which allow comments
+	In above \s means a "space" character
 
-# Mixins
+	- [ ] checkbox
+	- [x] checked checkbox
 
-It is common to have different environments in your application, e.g. in Angular you want different linting processes for your source folder and test folder. Probably you'll even want to distinguish between your tests based on whether they are unit, API or E2E tests. However, all of them can share a common ground and specify their individual needs.
+>	URLs
+	There are two ways to create links.
 
-> ESLint uses a cascading hierarchy, the proximate `.eslintrc` will have priority
+	[text](url)	Turn text into an URL.
 
-This is the case for `config/mixins`. The base configuration gets extended by a mixin for a particular environment:
+	![alt text](URL "title")  Place an image inline.
 
-1. Source environment `config/mixin/browser`:
+	![alt text][label]
+	[label]: URL "title"
 
-    ```js
-    {
-        "env": {
-            "node": false,
-            "browser": true
-        },
-        "rules": {
-            "strict": [2, "function"],
-            "no-console": 2
-        }
-    }
-    ```
+	[I'm an inline-style link](https://www.google.com)
 
-2. Test environment `config/mixin/test`:
+	[I'm an inline-style link with title](https://www.google.com "Google's Homepage")
 
-    > Note the prefix of the custom rule is the same as the plugin name
+	[I'm a reference-style link][Arbitrary case-insensitive reference text]
 
-    ```js
-    {
-        "env": {
-            "mocha": true
-        },
-        "rules": {
-            "skeleton/leftover-only": 2
-        }
-    }
-    ```
+	[I'm a relative reference to a repository file](../blob/master/LICENSE)
 
-`leftover-only` is an example rule which detects `.only`
+	[You can use numbers for reference-style link definitions][1]
 
-3. Unit test environment `config/mixin/unit`:
+	Or leave it empty and use the [link text itself]
 
-    ```js
-    {
-        "extends": [
-            "./browser",
-            "./test"
-        ],
-        "globals": {
-            "inject": true,
-            "module": true,
-            "sinon": true
-        }
-    }
-    ```
+	Some text to show that the reference links can follow later.
 
-# Custom Rules
+	[arbitrary case-insensitive reference text]: https://www.mozilla.org
+	[1]: http://slashdot.org
+	[link text itself]: http://www.reddit.com
 
-Custom rules go to `rules` and their respective tests to `test`. They have to be exported inside the `index.js`:
+>	Images
+	Inline-style:		![alt text](url "title")
 
-```js
-'use strict';
+	Reference-style:	![alt text][logo]
 
-module.exports = {
-    rules: {
-        'leftover-only': require('./rules/leftover-only')
-    }
-};
-```
+>	Code Blocks
+	Markdown converts text with four spaces at the front of each line to code
+	blocks. GFM supports that, but we also support fenced blocks. Just wrap your
+	code blocks in ``` and you won't need to indent manually to trigger a code
+	block. Keep in mind that both types of code blocks need to have a blank line
+	before them:
 
-# Integration
 
-The dependent modules or applications will need to add following dependencies to their `package.json`:
+	```
+	function test()
+	{
+		console.log("notice the blank line before this function?");
+	}
+	```
 
-```js
-"eslint": "^1.1.0",
-"eslint-plugin-skeleton": "^1.0.0"
-```
+	```
+	No language indicated, so no syntax highlighting.
+	But let's throw in a <b>tag</b>.
+	```
 
-> You'll need a private registry or you have to use git urls
+>	Syntax highlighting
+	Code blocks can be taken a step further to add syntax highlighting if you
+	request it. In your fenced block, add an optional language identifier and
+	it will run it through syntax highlighting. For example, to syntax highlight
+	Ruby code:
 
-Let's construct a typical Angular application structure enriched by ESLint:
+	```ruby
+	require 'redcarpet'
+	markdown = Redcarpet.new("Hello World!")
+	puts markdown.to_html
+	```
 
-```
-app/
-    bower_components/
-    .eslintrc
-node_modules/
-test/
-    e2e/
-        .eslintrc
-    api/
-        .eslintrc
-    unit/
-        .eslintrc
-.eslintignore
-.eslintrc
-```
+	Linguist [https://github.com/github/linguist] is used to perform language
+	detection and syntax highlighting. You can find out which keywords are valid
+	by perusing the languages YAML file [https://github.com/github/linguist/blob/master/lib/linguist/languages.yml].
 
-The `.eslintignore` is similar to a `.gitignore` and should ignore your `app/bower_components` and your `dist`.
+>	Tables
+	Tables aren't part of the core Markdown spec, but they are part of GFM and
+	Markdown Here supports them. They are an easy way of adding tables to your
+	email -- a task that would otherwise require copy-pasting from another application.
 
-The base `.eslintrc` will extend the base configuration from the plugin and function as root:
+	Colons can be used to align columns.
 
-```js
-{
-    "extends": "./node_modules/eslint-plugin-skeleton/config/eslintrc.base"
-}
-```
+	| Tables        | Are           | Cool  |
+	| ------------- |:-------------:| -----:|
+	| col 3 is      | right-aligned | $1600 |
+	| col 2 is      | centered      |   $12 |
+	| zebra stripes | are neat      |    $1 |
 
-The specific configurations extend their mixin. Examples:
+	The outer pipes (|) are optional, and you don't need to make the raw
+	Markdown line up prettily. You can also use inline Markdown.
 
-`app/.eslintrc`:
+	Markdown | Less | Pretty
+	--- | --- | ---
+	*Still* | `renders` | **nicely**
+	1 | 2 | 3
 
-```js
-{
-    "extends": "../node_modules/eslint-plugin-skeleton/config/mixins/browser"
-}
-````
+>	Blockquotes
+	> Blockquotes are very handy in email to emulate reply text.
+	> This line is part of the same quote.
 
-`app/test/unit/.eslintrc`:
+	Quote break.
 
-```js
-{
-    "extends": "../node_modules/eslint-plugin-skeleton/config/mixins/unit"
-}
-````
+	> This is a very long line that will still be quoted properly when it wraps. Oh boy let's keep writing to make sure this is long enough to actually wrap for everyone. Oh, you can *put* **Markdown** into a blockquote.
 
-and so on.
+>	Inline html
+	You can also use raw HTML in your Markdown, and it'll mostly work pretty well.
 
-If you then run `npm i` it will install the plugin and it will be available. Changes to your linting can be made at a central location, your build tool isn't a special case and it works flawless with editor plugins.
+	<dl>
+  		<dt>Definition list</dt>
+  		<dd>Is something people use sometimes.</dd>
 
-> Global ESLint doesn't recognize local plugins. Always install ESLint and the plugin locally. Also you can't link your Gulp module with the lint task.
+  		<dt>Markdown in HTML</dt>
+  		<dd>Does *not* work **very** well. Use HTML <em>tags</em>.</dd>
+	</dl>
+
+>	Horizontal Rule
+	Three or more...
+
+	---
+
+	Hyphens
+
+	***
+
+	Asterisks
+
+	___
+
+	Underscores
+
+>	Line Breaks
+	My basic recommendation for learning how line breaks work is to experiment
+	and discover -- hit <Enter> once (i.e., insert one newline), then hit it
+	twice (i.e., insert two newlines), see what happens. You'll soon learn to
+	get what you want. "Markdown Toggle" is your friend.
+
+	Here are some things to try out:
+
+	Here's a line for us to start with.
+
+	This line is separated from the one above by two newlines, so it will be a *separate paragraph*.
+
+	This line is also a separate paragraph, but...
+	This line is only separated by a single newline, so it's a separate line in the *same paragraph*.
