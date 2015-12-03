@@ -1,0 +1,13 @@
+# Site settings
+title: Random Musings
+author: Erik Mikkelson
+email: ErikMikkelson@gmail.com
+description: A personal blog about software engineering.
+baseurl: ""
+url: "https://erikmikkelson.github.io"
+twitter_username: ErikMikkelson
+github_username: ErikMikkelson
+
+# Build settings
+markdown: redcarpet
+highlighter: pygments
